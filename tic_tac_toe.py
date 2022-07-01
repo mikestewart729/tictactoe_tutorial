@@ -48,6 +48,39 @@ class TicTacToeGame:
         second_diagonal = [col[j] for j, col in enumerate(reversed(columns))]
         return rows + columns + [first_diagonal, second_diagonal]
 
+    def is_valid_move(self, move):
+        row, col = move.row, move.col
+        move_was_not_played = self._current_moves[row][col].label == ""
+        no_winner = not self._has_winner
+        return no_winner and move_was_not_played
+
+    def process_move(self, move):
+        row, col = move.row, move.col
+        self._current_moves[row][col] = move
+        for combo in self._winning_combos:
+            results = set(
+                self._current_moves[n][m].label
+                for n, m in combo
+            )
+            is_win = (len(results) == 1) and ("" not in results)
+            if is_win:
+                self._has_winner = True
+                self.winner_combo = combo
+                break
+
+    def has_winner(self):
+        return self._has_winner
+
+    def is_tied(self):
+        no_winner = not self._has_winner
+        played_moves = (
+            move.label for row in self._current_moves for move in row
+        )
+        return no_winner and all(played_moves)
+
+    def toggle_players(self):
+        self.current_player = next(self._players)
+
 class TicTacToeBoard(tk.Tk):
     def __init__(self):
         super().__init__()
